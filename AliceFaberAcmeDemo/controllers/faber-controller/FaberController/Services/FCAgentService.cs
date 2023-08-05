@@ -91,6 +91,29 @@ namespace FaberController.Services
             }
         }
 
+        public async Task<JObject> AcceptInvitation(string connectionId)
+        {
+            try
+            {
+                // var values = new JObject();
+                // values.Add("conn_id", connectionId);
+                // using var content = new StringContent(values.ToString(), Encoding.UTF8,"application/json" );
+                // using var content = {"conn_id": connectionId};
+                using var content = new StringContent("");
+                var response = await _http.PostAsync("/connections/" + connectionId + "/accept-invitation", content);
+
+                response.EnsureSuccessStatusCode();
+
+                var responseString = await response.Content.ReadAsStringAsync();
+                return JObject.Parse(responseString);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine(ex);
+                return new JObject();
+            }
+        }
+
         public async Task<JObject> ReceiveInvitation(string invitation)
         {
             try

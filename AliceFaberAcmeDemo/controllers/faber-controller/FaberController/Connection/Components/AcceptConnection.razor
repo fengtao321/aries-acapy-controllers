@@ -46,7 +46,8 @@
 
     private async void _handleValidSubmit()
     {
-        await AgentService.ReceiveInvitation(_acceptConnectionModel.InvitationObject);
+        var response = await AgentService.ReceiveInvitation(_acceptConnectionModel.InvitationObject);
+        await AgentService.AcceptInvitation((string)response["connection_id"]);
         Navigation.NavigateTo("/connections/active");
     }
 

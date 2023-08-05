@@ -1,51 +1,66 @@
-import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators, FormControl, AsyncValidatorFn, ValidationErrors } from '@angular/forms';
-import { Router } from '@angular/router';
+import {
+  AsyncValidatorFn,
+  FormBuilder,
+  FormControl,
+  FormGroup,
+  ValidationErrors,
+  Validators,
+} from "@angular/forms";
+import { BehaviorSubject, Observable, timer } from "rxjs";
+import { Component, OnInit } from "@angular/core";
+import {
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  map,
+  tap,
+} from "rxjs/operators";
 
-import { AgentService } from 'src/app/services/agent.service';
-
-import { map, debounceTime, distinctUntilChanged, filter, tap } from 'rxjs/operators';
-import { Observable, timer, BehaviorSubject } from 'rxjs';
+import { AgentService } from "src/app/services/agent.service";
+import { Router } from "@angular/router";
 
 function debouncedInvitationValidator(): AsyncValidatorFn {
   return (control: FormControl): Observable<ValidationErrors | null> => {
-    return timer(300)
-      .pipe(
-        map(() => {
-          try {
-            JSON.parse(control.value);
-            return null;
-          } catch (error) {
-            return { json: error.message };
-          }
-        })
-      );
+    return timer(300).pipe(
+      map(() => {
+        try {
+          JSON.parse(control.value);
+          return null;
+        } catch (error) {
+          return { json: error.message };
+        }
+      })
+    );
   };
 }
 
 @Component({
-  selector: 'app-accept-connection',
-  templateUrl: './accept-connection.component.html',
-  styleUrls: ['./accept-connection.component.scss']
+  selector: "app-accept-connection",
+  templateUrl: "./accept-connection.component.html",
+  styleUrls: ["./accept-connection.component.scss"],
 })
 export class AcceptConnectionComponent implements OnInit {
   form: FormGroup;
 
   invitationUrlError$ = new BehaviorSubject<string>(null);
 
-  constructor(private agentService: AgentService, private fb: FormBuilder, private router: Router) {
+  constructor(
+    private agentService: AgentService,
+    private fb: FormBuilder,
+    private router: Router
+  ) {
     this.form = this.fb.group({
       invitation: [null, Validators.required, debouncedInvitationValidator()],
-      invitationUrl: [null, Validators.nullValidator]
+      invitationUrl: [null, Validators.nullValidator],
     });
   }
 
   public get invitation(): FormControl {
-    return this.form && this.form.get('invitation') as FormControl;
+    return this.form && (this.form.get("invitation") as FormControl);
   }
 
   public get invitationUrl(): FormControl {
-    return this.form && this.form.get('invitationUrl') as FormControl;
+    return this.form && (this.form.get("invitationUrl") as FormControl);
   }
 
   ngOnInit() {
@@ -58,18 +73,20 @@ export class AcceptConnectionComponent implements OnInit {
         map((value: string) => {
           try {
             const url = new URL(value);
-            const invitationParam = url.searchParams.get('c_i');
+            const invitationParam = url.searchParams.get("c_i");
             if (!invitationParam) {
               throw new Error();
             }
 
-            this.invitation.setValue(JSON.stringify(JSON.parse(atob(invitationParam)), null, 4));
+            this.invitation.setValue(
+              JSON.stringify(JSON.parse(atob(invitationParam)), null, 4)
+            );
             this.invitation.markAsDirty();
             this.invitation.updateValueAndValidity();
           } catch (error) {
-            this.invitationUrlError$.next('Invalid invitation URL');
+            this.invitationUrlError$.next("Invalid invitation URL");
           }
-        }),
+        })
       )
       .subscribe();
   }
@@ -78,11 +95,14 @@ export class AcceptConnectionComponent implements OnInit {
     if (!this.form.valid) {
       return;
     }
-    this.agentService.receiveInvitation(this.invitation.value)
-      .pipe(
-        map(() => this.router.navigateByUrl('/connections'))
-      )
-      .subscribe();
+    this.agentService
+      .receiveInvitation(this.invitation.value)
+      .subscribe((response) => {
+        console.log(response);
+        this.agentService
+          .acceptInvitation(response["connection_id"])
+          .pipe(map(() => this.router.navigateByUrl("/connections")))
+          .subscribe();
+      });
   }
-
 }
