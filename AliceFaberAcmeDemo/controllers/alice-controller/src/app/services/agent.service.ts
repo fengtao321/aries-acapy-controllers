@@ -71,7 +71,7 @@ export class AgentService {
   }
 
   getProofs(): Observable<any[]> {
-    return this.http.get<any[]>("/present-proof/records").pipe(
+    return this.http.get<any[]>("/present-proof-2.0/records").pipe(
       switchMap((response: any) => of(response.results)),
       catchError(this.handleError<any[]>("getProofs", []))
     );

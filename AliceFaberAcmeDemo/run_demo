@@ -16,6 +16,7 @@ function web_start() {
 	ALICE_AGENT_HOST=${ALICE_AGENT_HOST:-"localhost"}
 	ACME_AGENT_HOST="acme-agent"
 
+# true if length of string is zero
 	if [ -z "${PWD_HOST_FQDN}" ]; then
 		DOCKERHOST=$(getDockerHost)
 		RUNMODE="docker"

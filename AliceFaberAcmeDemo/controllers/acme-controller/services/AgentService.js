@@ -159,7 +159,7 @@ class AgentService {
       const response = await httpAsync({
         hostname: hostname,
         port: port,
-        path: "/present-proof/records",
+        path: "/present-proof-2.0/records",
         method: "GET",
       });
       return response.results;
@@ -175,7 +175,7 @@ class AgentService {
         {
           hostname: hostname,
           port: port,
-          path: "/present-proof/send-request",
+          path: "/present-proof-2.0/send-request",
           method: "POST",
           headers: {
             "Content-Type": "application/json",
